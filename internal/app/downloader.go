@@ -94,6 +94,9 @@ func (d *Downloader) DownloadEpisode(ctx context.Context, task Task) error {
 }
 
 func (d *Downloader) DownloadEpisodeWithProgress(ctx context.Context, task Task, callback func(DownloadProgress)) (resultErr error) {
+	if err := ensureDiskSpace(d.cfg.OutputDir); err != nil {
+		return err
+	}
 	defer func() {
 		if ctx.Err() == nil {
 			d.recordTaskFailure("download.failed", task, 0, resultErr)

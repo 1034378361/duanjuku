@@ -1578,6 +1578,10 @@ func (a *UIApp) handleMerge(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "method not allowed"})
 		return
 	}
+	if err := ensureDiskSpace(a.cfg.OutputDir); err != nil {
+		writeJSON(w, http.StatusInsufficientStorage, map[string]string{"error": err.Error()})
+		return
+	}
 	ids, deleteEpisodes, ok := readMergeRequest(w, r)
 	if !ok {
 		return
