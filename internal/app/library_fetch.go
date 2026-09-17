@@ -16,7 +16,7 @@ func (d *Downloader) fetchAllDramas(ctx context.Context, sourceFilter string) ([
 	if more, _ := ctx.Value(libraryMoreKey{}).(bool); more {
 		return d.fetchMoreLibrary(ctx, sourceFilter)
 	}
-	fmt.Println("正在获取剧库列表...")
+	logInfo("正在获取剧库列表", "source_filter", sourceFilter)
 	type result struct {
 		name  string
 		items []Drama
@@ -59,8 +59,7 @@ func (d *Downloader) fetchAllDramas(ctx context.Context, sourceFilter string) ([
 			res.err = errors.New("未返回可识别的视频数据")
 		}
 		if res.err != nil {
-			msg := fmt.Sprintf("%s 获取失败: %v", res.name, publicError(res.err))
-			fmt.Printf("%s\n", msg)
+			logWarn("站源获取失败", "source", res.name, "error", publicError(res.err))
 			failures[res.name] = res.err
 		}
 		reportLibraryProgress(ctx, res.name, res.items, res.err, true)
@@ -73,7 +72,7 @@ func (d *Downloader) fetchAllDramas(ctx context.Context, sourceFilter string) ([
 		}
 	}
 	sort.SliceStable(unique, func(i, j int) bool { return unique[i].DisplayTitle() < unique[j].DisplayTitle() })
-	fmt.Printf("本次获取剧库：%d 部，结果将合并到本地缓存\n", len(unique))
+	logInfo("剧库获取完成，结果将合并到本地缓存", "count", len(unique))
 	if len(failures) > 0 {
 		return unique, &libraryLoadError{failures: failures}
 	}

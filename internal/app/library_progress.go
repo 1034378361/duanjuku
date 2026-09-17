@@ -100,7 +100,7 @@ func (a *UIApp) startLibraryLoadLocked(source string, mode libraryLoadMode, prio
 		a.libraryRevision++
 		count := len(a.dramas)
 		a.mu.Unlock()
-		fmt.Printf("本地剧库：%d 部，本次新增 %d 部\n", count, count-previousCount)
+		logInfo("本地剧库刷新完成", "total", count, "new_added", count-previousCount)
 	}()
 }
 

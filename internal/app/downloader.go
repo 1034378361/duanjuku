@@ -69,7 +69,8 @@ func NewDownloader(cfg Config) *Downloader {
 	transport.ResponseHeaderTimeout = 20 * time.Second
 	router := &proxyRouter{}
 	router.configure(cfg.ProxyURL)
-	transport.Proxy = router.proxy
+	// Wire per-source proxy overrides on top of the global proxy.
+	transport.Proxy = buildSourceAwareProxy(cfg, router.proxy)
 	resolver := newSafeDNSDialer(transport)
 	transport.DialContext = resolver.DialContext
 	downloader := &Downloader{cfg: cfg, providerHosts: map[string]string{}, limiter: newRequestLimiter(cfg.RequestConcurrency, time.Duration(cfg.RequestIntervalMS)*time.Millisecond), proxyRouter: router, diagnostics: newDiagnosticLog(cfg.dataDirectory())}

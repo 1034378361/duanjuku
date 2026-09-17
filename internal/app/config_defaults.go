@@ -42,6 +42,12 @@ type Config struct {
 	SkipBytes             int64  `json:"skipBytes"`
 	InsecureTLS           bool   `json:"insecureTLS"`
 	ProxyURL              string `json:"proxyURL,omitempty"`
+	// Per-source proxy overrides. When set, they take precedence over ProxyURL for matching traffic.
+	// Accepts the same values as ProxyURL: a proxy URL, "direct" (force bypass), or "" (inherit ProxyURL).
+	// Environment variables: JUKU_PROXY_HUANGGUO, JUKU_PROXY_HUANGDOU, JUKU_PROXY_HONGGUO
+	HuangguoProxyURL     string `json:"huangguoProxyURL,omitempty"`
+	HuangdouProxyURL     string `json:"huangdouProxyURL,omitempty"`
+	HongguoProxyURL      string `json:"hongguoProxyURL,omitempty"`
 	HuangguoAIURL         string `json:"huangguoAIURL,omitempty"`
 	HuangguoVideoURL      string `json:"huangguoVideoURL,omitempty"`
 	HuangdouURL           string `json:"huangdouURL,omitempty"`
@@ -135,6 +141,9 @@ func applyConfigEnvironment(cfg *Config) {
 	setIf(&cfg.HuangdouURL, "JUKU_HUANGDOU_URL")
 	setIf(&cfg.HongguoURL, "JUKU_HONGGUO_URL")
 	setIf(&cfg.ProxyURL, "JUKU_PROXY_URL")
+	setIf(&cfg.HuangguoProxyURL, "JUKU_PROXY_HUANGGUO")
+	setIf(&cfg.HuangdouProxyURL, "JUKU_PROXY_HUANGDOU")
+	setIf(&cfg.HongguoProxyURL, "JUKU_PROXY_HONGGUO")
 	setIf(&cfg.OutputDir, "JUKU_OUTPUT_DIR")
 	setIf(&cfg.FFmpeg, "JUKU_FFMPEG")
 }

@@ -229,9 +229,9 @@ func (a *UIApp) ListenAndServe(addr string) error {
 	go func() {
 		path, err := installer.ensure(context.Background())
 		if err != nil {
-			fmt.Printf("FFmpeg 准备失败：%v\n", publicError(err))
+			logError("FFmpeg 准备失败", "error", publicError(err))
 		} else {
-			fmt.Printf("FFmpeg 已就绪：%s\n", path)
+			logInfo("FFmpeg 已就绪", "path", path)
 		}
 	}()
 	a.mu.Lock()
@@ -280,6 +280,8 @@ func (a *UIApp) routes() http.Handler {
 	mux.HandleFunc("/api/ui/ffmpeg", a.handleFFmpeg)
 	mux.HandleFunc("/api/ui/config", a.handleConfig)
 	mux.HandleFunc("/api/ui/network/check", a.handleNetworkCheck)
+	mux.HandleFunc("/api/ui/source-health", a.handleSourceHealth)
+	mux.HandleFunc("/api/ui/source-health/refresh", a.handleSourceHealthRefresh)
 	mux.HandleFunc("/api/ui/directory/pick", a.handleDirectoryPicker)
 	mux.HandleFunc("/api/ui/image", a.handleImage)
 	mux.HandleFunc("/api/ui/admin/emby", a.handleEmbySyncSettings)

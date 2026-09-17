@@ -77,6 +77,70 @@ func configuredProxy(raw string) (*url.URL, error) {
 	return endpoint, nil
 }
 
+// sourceProxyOverrides maps a source name to the raw proxy string configured for it.
+// When a source has a per-source override, it takes precedence over the global ProxyURL.
+type sourceProxyOverrides struct {
+	overrides map[string]string // source → raw proxy URL or "direct"
+	fallback  func(*http.Request) (*url.URL, error)
+}
+
+// proxy implements the standard http.Transport.Proxy signature.
+// It looks up the source from the request URL host, and if a per-source override
+// is configured, it applies that override; otherwise falls back to the global proxy.
+func (s *sourceProxyOverrides) proxy(request *http.Request) (*url.URL, error) {
+	if request == nil || request.URL == nil {
+		return s.fallback(request)
+	}
+	hostname := strings.ToLower(request.URL.Hostname())
+	source := providerSourceForURL(request.URL.String())
+	// Determine which override applies for this hostname/source.
+	var raw string
+	switch source {
+	case sourceHuangguoAI, sourceHuangguoVideo:
+		raw = s.overrides["huangguo"]
+	case sourceHuangdou:
+		raw = s.overrides["huangdou"]
+	case sourceHongguo:
+		raw = s.overrides["hongguo"]
+	}
+	if raw == "" {
+		// No per-source override; apply the fallback global proxy.
+		return s.fallback(request)
+	}
+	if raw == "direct" {
+		return nil, nil
+	}
+	proxyURL, err := configuredProxy(raw)
+	if err != nil {
+		return nil, err
+	}
+	if proxyURL != nil && proxyBypassed(hostname, nil) {
+		return nil, nil
+	}
+	return proxyURL, nil
+}
+
+// buildSourceAwareProxy creates a proxy function that consults per-source overrides
+// before falling back to the global proxy. Returns nil if no per-source overrides are set.
+func buildSourceAwareProxy(cfg Config, global func(*http.Request) (*url.URL, error)) func(*http.Request) (*url.URL, error) {
+	overrides := map[string]string{}
+	if cfg.HuangguoProxyURL != "" {
+		overrides["huangguo"] = cfg.HuangguoProxyURL
+	}
+	if cfg.HuangdouProxyURL != "" {
+		overrides["huangdou"] = cfg.HuangdouProxyURL
+	}
+	if cfg.HongguoProxyURL != "" {
+		overrides["hongguo"] = cfg.HongguoProxyURL
+	}
+	if len(overrides) == 0 {
+		return global // nothing to override; use global as-is
+	}
+	s := &sourceProxyOverrides{overrides: overrides, fallback: global}
+	logInfo("已启用分站源代理路由", "overrides", overrides)
+	return s.proxy
+}
+
 func networkProxy(raw string) (func(*http.Request) (*url.URL, error), string) {
 	if raw == "direct" {
 		return nil, "直连（手动设置）"

@@ -112,7 +112,7 @@ func (a *UIApp) loadLibrary() {
 			}
 		}
 		a.enqueueSortMetadataLocked(pending, false)
-		fmt.Printf("已恢复本地剧库：%d 部，缓存：%s\n", len(a.dramas), libraryCachePath(a.cfg.dataDirectory()))
+		logInfo("已恢复本地剧库", "count", len(a.dramas), "cache", libraryCachePath(a.cfg.dataDirectory()))
 	}
 }
 
@@ -122,14 +122,14 @@ func (d *Downloader) GetAllDramas(ctx context.Context) ([]Drama, error) {
 		d.restoreHongguoCatalog(cache.HongguoApp)
 	}
 	if err == nil && len(cache.Dramas) > 0 {
-		fmt.Printf("使用本地剧库缓存：%d 部（%s），更新请使用 -refresh\n", len(cache.Dramas), cache.LoadedAt.Format("2006-01-02 15:04:05"))
+		logInfo("使用本地剧库缓存", "count", len(cache.Dramas), "loaded_at", cache.LoadedAt.Format("2006-01-02 15:04:05"))
 		if cache.LastError != "" {
 			return cache.Dramas, errors.New(cache.LastError)
 		}
 		return cache.Dramas, nil
 	}
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
-		fmt.Printf("  读取本地剧库缓存失败: %v\n", err)
+		logWarn("读取本地剧库缓存失败", "error", err)
 	}
 	return d.RefreshDramas(ctx, "")
 }
@@ -153,6 +153,6 @@ func (d *Downloader) RefreshDramas(ctx context.Context, source string) ([]Drama,
 	if err := writeLibraryCache(d.cfg.dataDirectory(), cache); err != nil {
 		loadErr = errors.Join(loadErr, fmt.Errorf("剧库缓存保存失败: %w", err))
 	}
-	fmt.Printf("本地剧库：%d 部，本次新增 %d 部\n", len(merged), len(merged)-len(cached.Dramas))
+	logInfo("本地剧库更新完成", "total", len(merged), "new_added", len(merged)-len(cached.Dramas))
 	return merged, loadErr
 }
