@@ -73,7 +73,7 @@ func publicURL(addr string) string {
 }
 
 func usage() {
-	fmt.Print(`短剧库 - 在线追剧与下载管理
+	fmt.Print(`果果剧库 - 红果点播与下载工具
 
 请仅下载你拥有权利或已获授权的视频内容。
 
@@ -104,7 +104,7 @@ func usage() {
   juku -open=false
   juku -ui=false -mode all
   juku -ui=false -mode search -keyword 女总裁
-  juku -ui=false -mode id -id 6a928xxxxx
+  juku -ui=false -mode id -id hongguo:7670772535931178008
   juku -ui=false -mode list
 `)
 }
@@ -181,7 +181,7 @@ func Run() {
 	}
 	_, ffmpegErr := exec.LookPath(portableFFmpeg(cfg.FFmpeg))
 	fmt.Printf("输出目录: %s\n下载并发: %d\nFFmpeg 已找到（后台校验）: %t\nTLS证书校验: %t\n", cfg.OutputDir, cfg.Concurrency, ffmpegErr == nil, !cfg.InsecureTLS)
-	d.recordDiagnostic(diagnosticEvent{Level: "info", Event: "app.started", Message: "短剧库已启动"})
+	d.recordDiagnostic(diagnosticEvent{Level: "info", Event: "app.started", Message: "果果剧库已启动"})
 	fmt.Printf("诊断日志: %s\n", d.diagnostics.path)
 	if ffmpegErr != nil {
 		if automaticFFmpeg(cfg.FFmpeg) {
