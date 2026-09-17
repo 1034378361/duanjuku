@@ -666,6 +666,10 @@
 
   async function playEpisode(index, offset = 0, shouldPlay = true, keepResumeMessage = false) {
     if (!episodes[index - 1]) return;
+    if (offset === 0) {
+      const skipIntro = Number(node('skipIntroSeconds')?.value) || 0;
+      if (skipIntro > 0) offset = skipIntro;
+    }
     const nextPlanKey = dramaID + ':' + index + ':' + quality;
     if (planKey !== nextPlanKey) {planKey = nextPlanKey; planMode = 'auto'; planFallbacks = 0; networkRefreshes = 0;}
     if (!sessionAvailable) {recoverPlayback(index, offset, shouldPlay); return;}
@@ -796,7 +800,20 @@
     }
     seekTimer = setTimeout(() => playEpisode(currentIndex, target, !video.paused), 180);
   });
-  video.addEventListener('timeupdate', () => {if (!loading && Number.isFinite(video.currentTime)) {lastPosition = video.currentTime; if (!video.paused && !video.seeking) saveHistory();} maybePrefetchNext();});
+  video.addEventListener('timeupdate', () => {
+    if (!loading && Number.isFinite(video.currentTime)) {
+      lastPosition = video.currentTime;
+      if (!video.paused && !video.seeking) saveHistory();
+      const skipOutro = Number(node('skipOutroSeconds')?.value) || 0;
+      if (skipOutro > 0 && node('autoNextEpisode').checked && Number.isFinite(video.duration) && video.duration > 15 && video.currentTime >= video.duration - skipOutro) {
+        if (!video.ended && currentIndex < episodes.length) {
+          video.dispatchEvent(new Event('ended'));
+          return;
+        }
+      }
+    }
+    maybePrefetchNext();
+  });
   video.addEventListener('playing', () => {desiredPlayback = true; if (!loading && !errorText.textContent) {historyPlayed = true; historyCompleted = false; statusText.textContent = '正在播放'; saveHistory(true);} maybePrefetchNext();});
   video.addEventListener('waiting', () => {if (!loading && !errorText.textContent) statusText.textContent = '正在缓冲…';});
   video.addEventListener('pause', () => {if (!loading && !video.error) desiredPlayback = false; if (!loading) saveHistory(true); if (!loading && !video.ended && !errorText.textContent) statusText.textContent = '已暂停';});
@@ -935,9 +952,15 @@
     node('autoNextEpisode').checked = localStorage.getItem('duanju.playback.autoNext') !== 'false';
     const rate = localStorage.getItem('duanju.playback.rate');
     if (Array.from(node('playbackRate').options).some(option => option.value === rate)) node('playbackRate').value = rate;
+    const skipIntro = localStorage.getItem('duanju.playback.skipIntro');
+    if (skipIntro && node('skipIntroSeconds')) node('skipIntroSeconds').value = skipIntro;
+    const skipOutro = localStorage.getItem('duanju.playback.skipOutro');
+    if (skipOutro && node('skipOutroSeconds')) node('skipOutroSeconds').value = skipOutro;
   } catch (_) {}
   node('autoNextEpisode').addEventListener('change', () => {try {localStorage.setItem('duanju.playback.autoNext', String(node('autoNextEpisode').checked));} catch (_) {}});
   node('playbackRate').addEventListener('change', () => {try {localStorage.setItem('duanju.playback.rate', node('playbackRate').value);} catch (_) {}});
+  node('skipIntroSeconds')?.addEventListener('change', () => {try {localStorage.setItem('duanju.playback.skipIntro', node('skipIntroSeconds').value);} catch (_) {}});
+  node('skipOutroSeconds')?.addEventListener('change', () => {try {localStorage.setItem('duanju.playback.skipOutro', node('skipOutroSeconds').value);} catch (_) {}});
   const pip = node('pictureInPictureBtn');
   pip.hidden = !document.pictureInPictureEnabled || typeof video.requestPictureInPicture !== 'function';
   pip.title = '画中画展示视频，网页弹幕留在当前页面';
