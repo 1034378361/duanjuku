@@ -100,6 +100,24 @@ export function createDetails(app) {
       bookmark.setAttribute('aria-pressed', String(Boolean(saved?.saved)));
       actions.append(play, bookmark);
       content.appendChild(actions);
+      const alts = app.library.getAlternativeSources?.(drama);
+      if (alts && alts.length > 1) {
+        const switcher = element('div', 'detail-source-switcher');
+        switcher.appendChild(element('span', 'small', '同剧其他站源（点击切换）：'));
+        const pills = element('div', 'source-pills');
+        for (const alt of alts) {
+          const isCurrent = alt.id === currentID;
+          const altEpisodes = episodeCount(alt) ? episodeCount(alt) + '集' : '';
+          const label = [sourceLabel(sourceKey(alt)), altEpisodes, alt.vip ? 'VIP' : ''].filter(Boolean).join(' · ');
+          const pill = button(label, () => {
+            if (!isCurrent) app.details.open(alt.id);
+          }, false, isCurrent ? 'source-pill active' : 'source-pill');
+          if (isCurrent) pill.disabled = true;
+          pills.appendChild(pill);
+        }
+        switcher.appendChild(pills);
+        content.appendChild(switcher);
+      }
       content.appendChild(element('p', 'detail-description', firstNonEmpty(drama.desc, drama.intro) || '站源暂未提供简介。'));
       const facts = element('dl', 'detail-facts');
       const values = [['集数', episodeCount(drama) ? episodeCount(drama) + ' 集' : '暂未提供'], ['状态', releaseText(drama.releaseStatus)], ['上线时间', drama.onlineDate], ['站点热度', drama.heat], ['播放量', drama.views], ['站点评分', drama.score]];

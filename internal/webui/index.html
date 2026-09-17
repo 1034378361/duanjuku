@@ -49,6 +49,7 @@
         <label class="catalog-select"><select id="channelSelect" aria-label="分类筛选"><option value="">全部分类</option></select><span data-icon="chevron"></span></label>
         <label class="catalog-select"><select id="sortSelect" aria-label="剧库排序"><option value="default">默认排序</option><option value="newest">最新上线</option><option value="oldest">最早上线</option><option value="heat">热度最高</option><option value="views">播放最多</option><option value="title">名称排序</option></select><span data-icon="chevron"></span></label>
         <button id="vipFilterBtn" class="quiet catalog-action vip-filter" data-vip-filter aria-pressed="false" hidden>隐藏 VIP</button>
+        <button id="dedupeFilterBtn" class="quiet catalog-action dedupe-filter" aria-pressed="false" title="隐藏跨站源同名重复短剧（每部剧保留首选源）">同名去重</button>
         <button id="openRankingsBtn" class="quiet catalog-action" aria-label="站点榜单" title="站点榜单" aria-haspopup="dialog" aria-controls="rankingPanel"><span class="button-content"><span data-icon="chart"></span><span class="control-label">榜单</span></span></button><button id="batchSelectBtn" data-download-only class="quiet catalog-action" aria-label="批量选择" title="批量选择" aria-pressed="false"><span class="button-content"><span data-icon="select"></span><span id="batchSelectLabel" class="control-label">批量选择</span></span></button>
       </div>
     </div>

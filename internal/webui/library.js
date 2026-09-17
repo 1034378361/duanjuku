@@ -43,6 +43,7 @@ export function createLibrary(app) {
     libraryRevision = 0;
     coverRepair.updated(drama.id);
     app.details.metadataStatus(drama.id, warning);
+    rebuildTitleMap();
     rebuildChannels(false);
     renderDramas();
     app.following.render();
@@ -60,8 +61,59 @@ export function createLibrary(app) {
   }
   const renderTasks = () => app.downloads.render();
   const pollTasks = () => app.downloads.refresh();
+  const byTitle = new Map();
+  let dedupeEnabled = Boolean(readPreference('dedupeFilter', false));
+
+  function normalizeTitle(title) {
+    if (!title) return '';
+    return title.trim().toLowerCase().replace(/[《》【】\[\]（）()·\s\-_:：]/g, '');
+  }
+
+  function rebuildTitleMap() {
+    byTitle.clear();
+    for (const d of dramas) {
+      const key = normalizeTitle(dramaTitle(d));
+      if (!key) continue;
+      let list = byTitle.get(key);
+      if (!list) {
+        list = [];
+        byTitle.set(key, list);
+      }
+      list.push(d);
+    }
+  }
+
+  function getAlternativeSources(drama) {
+    if (!drama) return [];
+    const key = normalizeTitle(dramaTitle(drama));
+    if (!key) return [drama];
+    return byTitle.get(key) || [drama];
+  }
+
 function searchableText(drama) {if (!searchText.has(drama)) searchText.set(drama, dramaSearchText(drama)); return searchText.get(drama);}
-function filteredDramas(){ const keyword=$('searchInput').value.trim().toLowerCase();const source=$('sourceSelect').value;const channel=$('channelSelect').value;return dramas.filter(dr=>{if(!window.JukuVIP.visible(dr))return false;if(source&&sourceKey(dr)!==source)return false;const cat=categoryName(dr);if(channel&&cat!==channel)return false;return !keyword||searchableText(dr).includes(keyword)||onlineSearchQuery===keyword&&onlineSearchIDs.has(dr.id);}); }
+function filteredDramas(){
+  const keyword=$('searchInput').value.trim().toLowerCase();
+  const source=$('sourceSelect').value;
+  const channel=$('channelSelect').value;
+  let list = dramas.filter(dr=>{
+    if(!window.JukuVIP.visible(dr))return false;
+    if(source&&sourceKey(dr)!==source)return false;
+    const cat=categoryName(dr);
+    if(channel&&cat!==channel)return false;
+    return !keyword||searchableText(dr).includes(keyword)||onlineSearchQuery===keyword&&onlineSearchIDs.has(dr.id);
+  });
+  if (dedupeEnabled && !source) {
+    const seen = new Set();
+    list = list.filter(dr => {
+      const key = normalizeTitle(dramaTitle(dr));
+      if (!key) return true;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+  return list;
+}
 
 function rebuildSources(){ rebuildOptions($('sourceSelect'),app.viewer?.sources || ['huangguo','huangdou','hongguo'],'全部站源',sourceLabel,false); }
 
@@ -135,6 +187,8 @@ function renderCard(drama) {
   } else poster.appendChild(fallback);
   poster.appendChild(element('span', 'poster-badge', sourceLabel(sourceKey(drama))));
   if (window.JukuVIP.isVIP(drama)) poster.appendChild(element('span', 'vip-badge', 'VIP'));
+  const alts = getAlternativeSources(drama);
+  if (alts.length > 1) poster.appendChild(element('span', 'alt-badge', alts.length + '源'));
   const caption = element('span', 'poster-caption');
   caption.setAttribute('aria-hidden', 'true');
   caption.append(icon('play'), element('span', 'watch-label', hasProgress ? '续播' : '播放'), element('span', 'poster-category', categoryName(drama)));
@@ -222,6 +276,7 @@ async function loadDramas(update) {
       byID.clear();
       for (let drama of result.data) {drama = reconcileDrama(drama); dramas.push(drama); byID.set(drama.id, drama);}
       for (const drama of recommendations.all()) {if (!byID.has(drama.id)) {dramas.push(drama); byID.set(drama.id, drama);}}
+      rebuildTitleMap();
       rebuildSources();
       rebuildChannels(false);
       if (pendingCategory !== null) {
@@ -271,6 +326,7 @@ function mergeRecommendations(items) {
     if (index === undefined) {positions.set(drama.id, dramas.length); dramas.push(drama);} else dramas[index] = drama;
     byID.set(drama.id, drama);
   }
+  rebuildTitleMap();
   libraryRevision = 0;
   rebuildSources();
   rebuildChannels(false);
@@ -461,10 +517,20 @@ function init() {
   $('invertVisibleBtn').addEventListener('click', () => {visibleIDs.forEach(id => selected.has(id) ? selected.delete(id) : selected.add(id)); renderDramas();});
   $('deselectDramasBtn').addEventListener('click', () => {selected.clear(); renderDramas();});
   $('enqueueBtn').addEventListener('click', enqueueSelected);
+  const dedupeBtn = $('dedupeFilterBtn');
+  if (dedupeBtn) {
+    dedupeBtn.setAttribute('aria-pressed', String(dedupeEnabled));
+    dedupeBtn.addEventListener('click', () => {
+      dedupeEnabled = !dedupeEnabled;
+      savePreference('dedupeFilter', dedupeEnabled);
+      dedupeBtn.setAttribute('aria-pressed', String(dedupeEnabled));
+      renderDramas();
+    });
+  }
   for (let index = 0; index < 12; index++) {const item = element('div', 'skeleton-card'); item.setAttribute('aria-hidden', 'true'); cards.appendChild(item);}
   return loadDramas(false);
 }
 
-return {init, refreshDrama, layout: viewport.refresh, get: id => byID.get(id), all: () => dramas, render: renderDramas, refreshFollowing, repairCover: coverRepair.touch, coverFailed: coverRepair.failed, coverLoaded: coverRepair.loaded, refresh: () => {libraryRevision = 0; return loadDramas(false);}, retryCovers: () => {cards.querySelectorAll('.card').forEach(card => card.retryCover?.()); app.details.retryCover(); app.following.retryCovers();}};
+return {init, refreshDrama, layout: viewport.refresh, get: id => byID.get(id), getAlternativeSources, all: () => dramas, render: renderDramas, refreshFollowing, repairCover: coverRepair.touch, coverFailed: coverRepair.failed, coverLoaded: coverRepair.loaded, refresh: () => {libraryRevision = 0; return loadDramas(false);}, retryCovers: () => {cards.querySelectorAll('.card').forEach(card => card.retryCover?.()); app.details.retryCover(); app.following.retryCovers();}};
 
 }
