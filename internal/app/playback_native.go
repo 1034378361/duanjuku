@@ -243,6 +243,7 @@ func (cache *playbackNative) render(job *playbackNativeJob) error {
 	}
 	defer release()
 	command := ffmpegMediaCommand(job.ctx, cache.ffmpeg, args...)
+	command.Dir = directory
 	log := &playbackLog{text: cappedStringWriter{limit: 64 * 1024}, ready: make(chan struct{})}
 	command.Stderr = log
 	if err := command.Start(); err != nil {

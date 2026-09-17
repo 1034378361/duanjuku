@@ -81,6 +81,7 @@ func (app *UIApp) generatePlayback(ctx context.Context, media *playbackMediaSess
 		input = proxy.root
 	}
 	command := ffmpegMediaCommand(jobCtx, ffmpeg, playbackGeneratedArgs(media.media, input, directory, processing)...)
+	command.Dir = directory
 	log := &playbackLog{text: cappedStringWriter{limit: 64 * 1024}, ready: make(chan struct{})}
 	command.Stderr = log
 	if err := command.Start(); err != nil {
