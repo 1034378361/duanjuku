@@ -41,3 +41,26 @@ func webAssets() http.Handler {
 		files.ServeHTTP(writer, request)
 	})
 }
+
+func handleManifest(writer http.ResponseWriter, request *http.Request) {
+	writer.Header().Set("Content-Type", "application/manifest+json")
+	writer.Header().Set("Cache-Control", "no-cache")
+	body, err := webui.Assets.ReadFile("manifest.json")
+	if err != nil {
+		http.NotFound(writer, request)
+		return
+	}
+	_, _ = writer.Write(body)
+}
+
+func handleServiceWorker(writer http.ResponseWriter, request *http.Request) {
+	writer.Header().Set("Content-Type", "application/javascript")
+	writer.Header().Set("Service-Worker-Allowed", "/")
+	writer.Header().Set("Cache-Control", "no-cache")
+	body, err := webui.Assets.ReadFile("sw.js")
+	if err != nil {
+		http.NotFound(writer, request)
+		return
+	}
+	_, _ = writer.Write(body)
+}

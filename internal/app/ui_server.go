@@ -252,6 +252,8 @@ func (a *UIApp) ListenAndServe(addr string) error {
 func (a *UIApp) routes() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", a.handleIndex)
+	mux.HandleFunc("/manifest.json", handleManifest)
+	mux.HandleFunc("/sw.js", handleServiceWorker)
 	mux.Handle("/assets/", webAssets())
 	mux.HandleFunc("/api/ui/viewer", a.handleViewer)
 	mux.HandleFunc("/api/ui/viewer/legacy", a.handleViewerLegacy)

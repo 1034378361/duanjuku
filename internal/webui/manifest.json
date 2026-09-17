@@ -1,0 +1,19 @@
+{
+  "name": "短剧库",
+  "short_name": "短剧库",
+  "description": "自托管多站源短剧聚合与流媒体服务",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#121212",
+  "background_color": "#121212",
+  "icons": [
+    {
+      "src": "/assets/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
