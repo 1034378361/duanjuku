@@ -81,7 +81,7 @@ function updateLibraryButton() {
 
 function metadataPriorityIDs(){const pending=new Set(dramas.filter(drama=>!drama.sortMetadata||drama.sortMetadata.version!==(['huangguo','huangguoai','huangguoai.com'].includes(String(drama.source||drama.id).split(':')[0])?2:1)||sourceKey(drama)==='huangdou'&&drama.vip==null&&!drama.sortMetadata.vipChecked||sourceKey(drama)==='hongguo'&&!coverURL(drama)&&!drama.sortMetadata.coverChecked).map(drama=>drama.id));return visibleIDs.filter(id=>pending.has(id)).slice(0,40);}
 
-function updateRefreshLabel(){ const source=$('sourceSelect').value;$('vipFilterBtn').hidden=app.viewer?.sources?.includes('huangdou')===false||Boolean(source&&source!=='huangdou');const hongguo=app.viewer?.sources?.includes('hongguo')!==false&&(!source||source==='hongguo');updateLibraryButton();$('onlineSearchBtn').hidden=!hongguo;$('searchInput').placeholder='搜索剧名、简介或标签';$('onlineSearchBtn').title='联网搜索红果，也可按回车'; }
+function updateRefreshLabel(){ const source=$('sourceSelect').value;$('vipFilterBtn').hidden=app.viewer?.sources?.includes('huangdou')===false||Boolean(source&&source!=='huangdou');const hongguo=app.viewer?.sources?.includes('hongguo')!==false&&(!source||source==='hongguo');updateLibraryButton();$('onlineSearchBtn').hidden=!hongguo;$('searchInput').placeholder='搜索剧名、拼音首字母或标签';$('onlineSearchBtn').title='联网搜索红果，也可按回车'; }
 
 function placeholder(text){ return element('div','cover placeholder',text||'暂无封面'); }
 

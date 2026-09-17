@@ -53,6 +53,8 @@ type Drama struct {
 	Tags              []string           `json:"tags,omitempty"`
 	ReleaseStatus     string             `json:"releaseStatus,omitempty"`
 	SortMetadata      *sortMetadataState `json:"sortMetadata,omitempty"`
+	Pinyin            string             `json:"pinyin,omitempty"`
+	Initials          string             `json:"initials,omitempty"`
 }
 
 func (d Drama) DisplayTitle() string {

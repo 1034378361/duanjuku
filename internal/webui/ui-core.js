@@ -56,7 +56,7 @@ function coverURL(dr){ return firstNonEmpty(dr.cover,dr.coverUrl,dr.cover_url,dr
 
 function tagsText(dr){ return Array.isArray(dr.tags)?dr.tags.map(valueText).filter(Boolean):[]; }
 
-function dramaSearchText(dr){ return [dr.title,dr.name,dr.id,dr.desc,dr.intro,dr.remark,sourceLabel(sourceKey(dr)),categoryName(dr),tagsText(dr).join(' ')].join(' ').toLowerCase(); }
+function dramaSearchText(dr){ return [dr.title,dr.name,dr.id,dr.desc,dr.intro,dr.remark,dr.initials,dr.pinyin,sourceLabel(sourceKey(dr)),categoryName(dr),tagsText(dr).join(' ')].join(' ').toLowerCase(); }
 
 function rebuildOptions(select,values,allLabel,labelFor,reset){ const previous=reset?'':select.value;empty(select);const all=element('option','',allLabel);all.value='';select.appendChild(all);values.forEach(value=>{const option=element('option','',labelFor(value));option.value=value;select.appendChild(option);});select.value=values.includes(previous)?previous:''; }
 

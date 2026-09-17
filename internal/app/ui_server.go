@@ -790,6 +790,7 @@ func (a *UIApp) normalizeDramaCovers(dramas []Drama) {
 func normalizeDramaCover(drama *Drama) {
 	drama.OnlineDate = normalizeDate(drama.OnlineDate)
 	drama.Views = normalizeViews(drama.Views)
+	enrichDramaPinyin(drama)
 	if p := bestDramaCover(*drama); p != "" {
 		drama.Cover = "/api/ui/image?url=" + url.QueryEscape(p)
 	}
