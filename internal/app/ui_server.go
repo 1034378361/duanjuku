@@ -90,6 +90,7 @@ type UIApp struct {
 	dramaRefreshes        map[string]*dramaRefreshCall
 	dramaRefreshSlots     chan struct{}
 	coverImages           coverImageCache
+	coverDisk             *coverDiskCache
 	coverRepairs          map[string]*coverRepairCall
 	coverRepairSlots      chan struct{}
 }
@@ -211,9 +212,12 @@ func NewUIApp(d *Downloader) *UIApp {
 		nextOutputDir:   cfg.outputDirSetting,
 	}
 	a.cond = sync.NewCond(&a.mu)
+	a.coverDisk = newCoverDiskCache(cfg.dataDirectory())
 	a.loadState()
 	a.loadLibrary()
 	a.startWorkers()
+	// Prune stale disk covers on startup (background, non-blocking).
+	go a.coverDisk.prune()
 	return a
 }
 
@@ -291,6 +295,8 @@ func (a *UIApp) routes() http.Handler {
 	mux.HandleFunc("/api/emby/stream.m3u8", a.handleEmbyStream)
 	mux.HandleFunc("/api/emby/segment.ts", a.handleEmbySegment)
 	a.registerPlaybackRoutes(mux)
+	mux.HandleFunc("/api/ui/cover/stats", a.handleCoverCacheStats)
+	mux.HandleFunc("/api/ui/cover/prune", a.handleCoverCachePrune)
 	mux.HandleFunc("/healthz", a.handleHealthz)
 	return a.withAccountAccess(a.withBrowserViewer(mux))
 }

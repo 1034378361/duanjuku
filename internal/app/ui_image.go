@@ -22,7 +22,16 @@ func isHongguoImageHost(host string) bool {
 func (app *UIApp) loadCoverImage(ctx context.Context, remoteURL string, decode func([]byte, string) []byte) ([]byte, error) {
 	source, _ := ctx.Value(coverSourceKey{}).(string)
 	referer := sourceCoverReferer(source, remoteURL)
-	return app.coverImages.load(ctx, remoteURL+"\x00"+referer, func(ctx context.Context) ([]byte, error) {
+	cacheKey := remoteURL + "\x00" + referer
+
+	// 1. Check disk cache first (fast path across restarts).
+	if app.coverDisk != nil {
+		if data, err := app.coverDisk.load(cacheKey); err == nil && len(data) > 0 {
+			return data, nil
+		}
+	}
+
+	return app.coverImages.load(ctx, cacheKey, func(ctx context.Context) ([]byte, error) {
 		ctx = context.WithValue(ctx, coverRequestKey{}, true)
 		request, err := http.NewRequestWithContext(ctx, http.MethodGet, remoteURL, nil)
 		if err != nil {
@@ -64,10 +73,18 @@ func (app *UIApp) loadCoverImage(ctx context.Context, remoteURL string, decode f
 			data = decode(data, remoteURL)
 		}
 		if isKnownImage(data) {
+			// 2. Write-back to disk cache after successful remote fetch.
+			if app.coverDisk != nil {
+				go app.coverDisk.store(cacheKey, data)
+			}
 			return data, nil
 		}
 		if isHEICImage(data) {
-			return app.downloader.convertHEICCover(ctx, data)
+			converted, err := app.downloader.convertHEICCover(ctx, data)
+			if err == nil && app.coverDisk != nil {
+				go app.coverDisk.store(cacheKey, converted)
+			}
+			return converted, err
 		}
 		return nil, errors.New("封面内容无效，请检查代理或站点是否需要验证")
 	})
