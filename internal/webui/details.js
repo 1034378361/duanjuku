@@ -144,8 +144,18 @@ export function createDetails(app) {
       emby.id = 'detailEmbyBtn';
       emby.dataset.focusKey = 'detail-emby';
       emby.title = '导出 STRM 分集文件，用于现有 Emby 电视剧媒体库';
-      if (app.viewer?.onlineOnly) secondary.append(watched, autoDl);
-      else secondary.append(app.downloads.qualityControl(), download, watched, autoDl, emby);
+      const m3u = button('M3U 链接', () => {
+        const link = `${window.location.origin}/api/ui/playlist.m3u?id=${encodeURIComponent(currentID)}`;
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(link).then(() => setMessage('M3U 播放列表链接已复制，可直接填入 Infuse/VLC/APTV！'));
+        } else {
+          prompt('M3U 播放列表链接（可直接填入 Infuse/VLC/APTV）：', link);
+        }
+      }, !known, 'secondary');
+      m3u.id = 'detailM3UBtn';
+      m3u.title = '复制 M3U 播放列表链接，可直接填入 Apple TV Infuse、VLC 或 APTV';
+      if (app.viewer?.onlineOnly) secondary.append(watched, autoDl, m3u);
+      else secondary.append(app.downloads.qualityControl(), download, watched, autoDl, emby, m3u);
       actions.after(secondary);
       content.appendChild(element('p', 'small notice', '手动标记用于整理清单，实际播放进度仍自动保存。'));
     });

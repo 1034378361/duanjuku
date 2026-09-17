@@ -302,6 +302,7 @@ func (a *UIApp) routes() http.Handler {
 	mux.HandleFunc("/api/ui/cover/prune", a.handleCoverCachePrune)
 	mux.HandleFunc("/api/ui/webhook/test", a.handleWebhookTest)
 	mux.HandleFunc("/healthz", a.handleHealthz)
+	mux.HandleFunc("/api/ui/playlist.m3u", a.handlePlaylist)
 	mux.Handle("/webdav/", a.webdavHandler())
 	mux.Handle("/webdav", a.webdavHandler())
 	return a.withAccountAccess(a.withBrowserViewer(mux))

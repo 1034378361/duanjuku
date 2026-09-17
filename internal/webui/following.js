@@ -236,11 +236,21 @@ export function createFollowing(app) {
     render();
   }
 
+  function copyFollowingM3U() {
+    const link = `${window.location.origin}/api/ui/playlist.m3u`;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(link).then(() => setMessage('追剧 M3U 播放列表链接已复制，可填入 Infuse/APTV 订阅！'));
+    } else {
+      prompt('我的追剧 M3U 订阅链接：', link);
+    }
+  }
+
   function init() {
     document.querySelectorAll('[data-follow-tab]').forEach(control => control.addEventListener('click', () => showTab(control.dataset.followTab)));
     $('followingSearch').addEventListener('input', () => {visibleLimit = 100; render();});
     $('retryFollowingBtn').addEventListener('click', refresh);
     $('checkFollowingUpdatesBtn')?.addEventListener('click', checkUpdates);
+    $('followingM3UBtn')?.addEventListener('click', copyFollowingM3U);
     document.addEventListener('visibilitychange', () => {if (!document.hidden && Date.now() - lastRefresh > 30000) refresh();});
     return refresh();
   }
