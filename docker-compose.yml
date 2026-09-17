@@ -14,11 +14,10 @@ services:
       sh -c "
         sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories &&
         apk add --no-cache ca-certificates ffmpeg curl tzdata &&
-        if [ ! -f /usr/local/bin/juku ]; then
-          (curl -fsSL https://ghfast.top/https://raw.githubusercontent.com/1034378361/duanjuku/main/duanjuku_linux -o /usr/local/bin/juku || \
-           curl -fsSL https://gh-proxy.com/https://raw.githubusercontent.com/1034378361/duanjuku/main/duanjuku_linux -o /usr/local/bin/juku || \
-           curl -fsSL https://raw.githubusercontent.com/1034378361/duanjuku/main/duanjuku_linux -o /usr/local/bin/juku) &&
-          chmod +x /usr/local/bin/juku
-        fi &&
+        rm -f /usr/local/bin/juku &&
+        (curl -fsSL https://ghfast.top/https://raw.githubusercontent.com/1034378361/duanjuku/main/duanjuku_linux -o /usr/local/bin/juku || \
+         curl -fsSL https://gh-proxy.com/https://raw.githubusercontent.com/1034378361/duanjuku/main/duanjuku_linux -o /usr/local/bin/juku || \
+         curl -fsSL https://raw.githubusercontent.com/1034378361/duanjuku/main/duanjuku_linux -o /usr/local/bin/juku) &&
+        chmod 755 /usr/local/bin/juku &&
         /usr/local/bin/juku -open=false -listen=0.0.0.0:8998 -data-dir=/data -out=/downloads -admin-user=admin -admin-password=admin123456
       "
