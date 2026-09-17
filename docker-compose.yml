@@ -1,9 +1,6 @@
 services:
   duanjuku:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: duanjuku:latest
+    image: alpine:latest
     container_name: duanjuku
     restart: unless-stopped
     ports:
@@ -13,11 +10,15 @@ services:
       - ./downloads:/downloads
     environment:
       - TZ=Asia/Shanghai
-    command:
-      - "-open=false"
-      - "-listen=0.0.0.0:8998"
-      - "-data-dir=/data"
-      - "-out=/downloads"
-      - "-ffmpeg=/usr/bin/ffmpeg"
-      - "-admin-user=admin"
-      - "-admin-password=admin123456"
+    command: >
+      sh -c "
+        sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories &&
+        apk add --no-cache ca-certificates ffmpeg curl tzdata &&
+        if [ ! -f /usr/local/bin/juku ]; then
+          (curl -fsSL https://ghfast.top/https://raw.githubusercontent.com/1034378361/duanjuku/main/duanjuku_linux -o /usr/local/bin/juku || \
+           curl -fsSL https://gh-proxy.com/https://raw.githubusercontent.com/1034378361/duanjuku/main/duanjuku_linux -o /usr/local/bin/juku || \
+           curl -fsSL https://raw.githubusercontent.com/1034378361/duanjuku/main/duanjuku_linux -o /usr/local/bin/juku) &&
+          chmod +x /usr/local/bin/juku
+        fi &&
+        /usr/local/bin/juku -open=false -listen=0.0.0.0:8998 -data-dir=/data -out=/downloads -admin-user=admin -admin-password=admin123456
+      "
