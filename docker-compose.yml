@@ -13,11 +13,11 @@ services:
     command: >
       sh -c "
         sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories &&
-        apk add --no-cache ca-certificates ffmpeg curl tzdata &&
-        rm -f /usr/local/bin/juku &&
-        (curl -fsSL https://ghfast.top/https://raw.githubusercontent.com/1034378361/duanjuku/main/duanjuku_linux -o /usr/local/bin/juku || \
-         curl -fsSL https://gh-proxy.com/https://raw.githubusercontent.com/1034378361/duanjuku/main/duanjuku_linux -o /usr/local/bin/juku || \
-         curl -fsSL https://raw.githubusercontent.com/1034378361/duanjuku/main/duanjuku_linux -o /usr/local/bin/juku) &&
-        chmod 755 /usr/local/bin/juku &&
-        /usr/local/bin/juku -open=false -listen=0.0.0.0:8998 -data-dir=/data -out=/downloads -admin-user=admin -admin-password=admin123456
+        apk add --no-cache ca-certificates ffmpeg tzdata &&
+        while [ ! -f /data/duanjuku_linux ]; do
+          echo '【提示】请通过飞牛[文件]应用，将 duanjuku_linux 拖拽上传到当前项目的 data 目录中...' &&
+          sleep 5
+        done &&
+        chmod 755 /data/duanjuku_linux &&
+        /data/duanjuku_linux -open=false -listen=0.0.0.0:8998 -data-dir=/data -out=/downloads -admin-user=admin -admin-password=admin123456
       "
