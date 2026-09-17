@@ -296,6 +296,7 @@ func (a *UIApp) routes() http.Handler {
 	mux.HandleFunc("/api/emby/cover", a.handleEmbyCover)
 	mux.HandleFunc("/api/emby/stream.m3u8", a.handleEmbyStream)
 	mux.HandleFunc("/api/emby/segment.ts", a.handleEmbySegment)
+	mux.HandleFunc("/api/emby/webhook", a.handleEmbyWebhook)
 	a.registerPlaybackRoutes(mux)
 	mux.HandleFunc("/api/ui/cover/stats", a.handleCoverCacheStats)
 	mux.HandleFunc("/api/ui/cover/prune", a.handleCoverCachePrune)
