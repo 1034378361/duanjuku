@@ -255,6 +255,17 @@ func (proxy *hlsProxy) ServeHTTP(writer http.ResponseWriter, request *http.Reque
 	}
 	body := asset.body
 	if len(body) == 0 {
+		// Check segment chunk cache for fast seek and replay (0ms latency)
+		if !asset.playlist && request.Header.Get("Range") == "" && request.Method == http.MethodGet {
+			if cached, hit := globalChunkCache.Get(asset.remote); hit {
+				writer.Header().Set("X-Cache", "HIT")
+				if contentType := hlsAssetContentType(asset.extension); contentType != "" {
+					writer.Header().Set("Content-Type", contentType)
+				}
+				http.ServeContent(writer, request, "segment", time.Time{}, bytes.NewReader(cached))
+				return
+			}
+		}
 		if proxy.acquire != nil {
 			release, err := proxy.acquire(request.Context())
 			if err != nil {
@@ -329,8 +340,12 @@ func (proxy *hlsProxy) ServeHTTP(writer http.ResponseWriter, request *http.Reque
 			if request.Method == http.MethodHead {
 				return
 			}
-			if _, err := io.Copy(writer, reader); err != nil && reader.failure != nil && request.Context().Err() == nil {
+			var buf bytes.Buffer
+			tee := io.TeeReader(reader, &buf)
+			if _, err := io.Copy(writer, tee); err != nil && reader.failure != nil && request.Context().Err() == nil {
 				proxy.recordError(reader.failure)
+			} else if err == nil && request.Header.Get("Range") == "" && buf.Len() > 0 && buf.Len() <= maxChunkSizeBytes {
+				globalChunkCache.Put(asset.remote, buf.Bytes())
 			}
 			return
 		}
