@@ -13,11 +13,17 @@ services:
     command: >
       sh -c "
         sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories &&
-        apk add --no-cache ca-certificates ffmpeg tzdata &&
-        while [ ! -f /data/duanjuku_linux ]; do
-          echo '【提示】请通过飞牛[文件]应用，将 duanjuku_linux 拖拽上传到当前项目的 data 目录中...' &&
-          sleep 5
-        done &&
+        apk add --no-cache ca-certificates ffmpeg curl tzdata &&
+        if [ ! -f /data/duanjuku_linux ] || [ $$(wc -c < /data/duanjuku_linux 2>/dev/null || echo 0) -lt 10000000 ]; then
+          echo '正在下载/更新多站源完整程序(16.6MB)...' &&
+          (curl -fsSL https://ghfast.top/https://raw.githubusercontent.com/1034378361/duanjuku/main/duanjuku_linux -o /data/duanjuku_linux || \
+           curl -fsSL https://gh-proxy.com/https://raw.githubusercontent.com/1034378361/duanjuku/main/duanjuku_linux -o /data/duanjuku_linux || \
+           curl -fsSL https://raw.githubusercontent.com/1034378361/duanjuku/main/duanjuku_linux -o /data/duanjuku_linux || true)
+        fi &&
+        if [ ! -f /data/duanjuku_linux ] || [ $$(wc -c < /data/duanjuku_linux 2>/dev/null || echo 0) -lt 10000000 ]; then
+          echo '【提示】网络下载若遇阻，请直接将电脑上的 duanjuku_linux 拖拽上传到当前项目的 data 目录' &&
+          while [ ! -f /data/duanjuku_linux ] || [ $$(wc -c < /data/duanjuku_linux 2>/dev/null || echo 0) -lt 10000000 ]; do sleep 3; done
+        fi &&
         chmod 755 /data/duanjuku_linux &&
         /data/duanjuku_linux -open=false -listen=0.0.0.0:8998 -data-dir=/data -out=/downloads -admin-user=admin -admin-password=admin123456
       "
