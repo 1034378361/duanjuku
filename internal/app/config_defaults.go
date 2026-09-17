@@ -52,6 +52,7 @@ type Config struct {
 	HuangguoVideoURL      string `json:"huangguoVideoURL,omitempty"`
 	HuangdouURL           string `json:"huangdouURL,omitempty"`
 	HongguoURL            string `json:"hongguoURL,omitempty"`
+	WebhookURL            string `json:"webhookURL,omitempty"`
 }
 
 func defaultConfig() Config {
@@ -146,6 +147,7 @@ func applyConfigEnvironment(cfg *Config) {
 	setIf(&cfg.HongguoProxyURL, "JUKU_PROXY_HONGGUO")
 	setIf(&cfg.OutputDir, "JUKU_OUTPUT_DIR")
 	setIf(&cfg.FFmpeg, "JUKU_FFMPEG")
+	setIf(&cfg.WebhookURL, "JUKU_WEBHOOK_URL")
 }
 
 func (c Config) validate() error {

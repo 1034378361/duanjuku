@@ -299,6 +299,7 @@ func (a *UIApp) routes() http.Handler {
 	a.registerPlaybackRoutes(mux)
 	mux.HandleFunc("/api/ui/cover/stats", a.handleCoverCacheStats)
 	mux.HandleFunc("/api/ui/cover/prune", a.handleCoverCachePrune)
+	mux.HandleFunc("/api/ui/webhook/test", a.handleWebhookTest)
 	mux.HandleFunc("/healthz", a.handleHealthz)
 	return a.withAccountAccess(a.withBrowserViewer(mux))
 }
