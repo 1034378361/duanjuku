@@ -69,7 +69,7 @@
   </section>
   <section class="page-view" id="followingPage" data-view="following" aria-label="我的追剧" hidden>
     <div class="page-heading"><div><h1>我的追剧</h1><p>留住想看的，接着上次看。</p></div><button id="openHistoryBtn" class="secondary button-content" aria-label="完整观看记录" aria-haspopup="dialog" aria-controls="historyPanel"><span data-icon="clock"></span>历史记录</button></div>
-    <div class="following-toolbar"><div class="segments" role="group" aria-label="追剧分组"><button data-follow-tab="watching" aria-pressed="true">在看 <span id="watchingCount">0</span></button><button data-follow-tab="saved" aria-pressed="false">想看 <span id="savedCount">0</span></button><button data-follow-tab="completed" aria-pressed="false">已看 <span id="completedCount">0</span></button></div><input id="followingSearch" type="search" maxlength="80" aria-label="搜索追剧清单" placeholder="搜索我的追剧"></div>
+    <div class="following-toolbar"><div class="segments" role="group" aria-label="追剧分组"><button data-follow-tab="watching" aria-pressed="true">在看 <span id="watchingCount">0</span></button><button data-follow-tab="saved" aria-pressed="false">想看 <span id="savedCount">0</span></button><button data-follow-tab="completed" aria-pressed="false">已看 <span id="completedCount">0</span></button></div><button id="checkFollowingUpdatesBtn" class="secondary" title="在线检查所追剧集是否有更新"><span data-icon="refresh"></span>检查更新</button><input id="followingSearch" type="search" maxlength="80" aria-label="搜索追剧清单" placeholder="搜索我的追剧"></div>
     <div id="followingError" class="error notice" role="status"></div><button id="retryFollowingBtn" class="secondary" hidden>重新读取追剧清单</button>
     <div id="followingList" class="following-list" aria-live="polite"></div>
     <p class="page-footnote">新集提示来自已更新的剧库资料。完整播放记录仍保留在“历史记录”。</p>

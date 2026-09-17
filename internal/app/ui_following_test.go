@@ -261,3 +261,27 @@ func TestFollowingLoadRejectsSourceMismatchAndLimitPreservesExistingEntries(t *t
 	followingChangeForTest(t, app, map[string]any{"dramaId": entry.DramaID, "saved": false})
 	followingChangeForTest(t, app, map[string]any{"dramaId": historyFixtureDramaID, "saved": true})
 }
+
+func TestFollowingAutoDownloadToggleAndTrigger(t *testing.T) {
+	app := followingFixture(t)
+	// 1. Enable saved and autoDownload
+	followingChangeForTest(t, app, map[string]any{
+		"dramaId":      historyFixtureDramaID,
+		"saved":        true,
+		"autoDownload": true,
+	})
+
+	// 2. Verify in followingList
+	entries := followingListForTest(t, app)
+	if len(entries) != 1 {
+		t.Fatalf("expected 1 entry, got %d", len(entries))
+	}
+	if !entries[0].AutoDownload {
+		t.Fatalf("expected AutoDownload to be true")
+	}
+
+	// 3. Test checkDramaUpdateFollowings
+	drama := app.dramas[0]
+	app.checkDramaUpdateFollowings(drama, 3, 5)
+}
+

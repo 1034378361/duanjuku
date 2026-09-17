@@ -236,6 +236,7 @@ func (a *UIApp) ListenAndServe(addr string) error {
 			logInfo("FFmpeg 已就绪", "path", path)
 		}
 	}()
+	go a.startFollowingUpdateChecker()
 	a.mu.Lock()
 	a.address = addr
 	_ = a.saveStateLocked()
@@ -270,6 +271,7 @@ func (a *UIApp) routes() http.Handler {
 	mux.HandleFunc("/api/ui/vip/metadata", a.handleVIPMetadata)
 	mux.HandleFunc("/api/ui/search", a.handleLibrarySearch)
 	mux.HandleFunc("/api/ui/following", a.handleFollowing)
+	mux.HandleFunc("/api/ui/following/check-updates", a.handleFollowingCheckUpdates)
 	mux.HandleFunc("/api/ui/rankings", a.handleRankings)
 	mux.HandleFunc("/api/ui/recommendations", a.handleRecommendations)
 	mux.HandleFunc("/api/ui/download", a.handleDownload)

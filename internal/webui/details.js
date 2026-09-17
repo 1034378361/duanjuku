@@ -118,12 +118,16 @@ export function createDetails(app) {
       const watched = button(saved?.completed ? '取消已看标记' : '标为已看', () => app.following.setCompleted(currentID, !saved?.completed), app.following.busy(currentID), 'secondary');
       watched.id = 'detailCompletedBtn';
       watched.dataset.focusKey = 'detail-completed';
+      const autoDl = button(saved?.autoDownload ? '已开启追更下载' : '开启追更下载', () => app.following.setAutoDownload(currentID, !saved?.autoDownload), app.following.busy(currentID), saved?.autoDownload ? 'secondary active' : 'secondary');
+      autoDl.id = 'detailAutoDlBtn';
+      autoDl.dataset.focusKey = 'detail-autodl';
+      autoDl.title = '剧集有新集数时，自动加入下载队列';
       const emby = button(exporting.has(currentID) ? '导出中…' : '导出 Emby', () => exportEmby(currentID, title), !known || exporting.has(currentID), 'secondary');
       emby.id = 'detailEmbyBtn';
       emby.dataset.focusKey = 'detail-emby';
       emby.title = '导出 STRM 分集文件，用于现有 Emby 电视剧媒体库';
-      if (app.viewer?.onlineOnly) secondary.appendChild(watched);
-      else secondary.append(app.downloads.qualityControl(), download, watched, emby);
+      if (app.viewer?.onlineOnly) secondary.append(watched, autoDl);
+      else secondary.append(app.downloads.qualityControl(), download, watched, autoDl, emby);
       actions.after(secondary);
       content.appendChild(element('p', 'small notice', '手动标记用于整理清单，实际播放进度仍自动保存。'));
     });

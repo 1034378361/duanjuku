@@ -105,7 +105,13 @@ export function createFollowing(app) {
         const play = button(record.completed ? '重看' : record.watching ? '继续观看' : '开始看', () => app.play(record.id, record.title), false, record.watching ? '' : 'subtle');
         play.dataset.focusKey = 'following-play-' + record.id;
         const save = saveButton(record.id, record.title);
-        actions.append(play, save);
+        if (record.entry?.saved) {
+          const autoDl = button(record.entry?.autoDownload ? '自动追更中' : '自动追更', () => setAutoDownload(record.id, !record.entry?.autoDownload), pending.has(record.id), record.entry?.autoDownload ? 'secondary active' : 'secondary subtle');
+          autoDl.title = record.entry?.autoDownload ? '已开启：剧集更新时自动加入下载队列' : '开启后，剧集更新时自动加入下载队列';
+          actions.append(play, autoDl, save);
+        } else {
+          actions.append(play, save);
+        }
         row.append(identity, description, actions);
         fragment.appendChild(row);
       }
@@ -188,6 +194,29 @@ export function createFollowing(app) {
     return change(id, {completed: value}, value ? '已标为已看，播放进度仍保留' : '已取消手动已看标记', {completed: !value});
   }
 
+  function setAutoDownload(id, value) {
+    return change(id, {autoDownload: value}, value ? '已开启剧集更新自动下载' : '已关闭剧集更新自动下载');
+  }
+
+  async function checkUpdates() {
+    const btn = $('checkFollowingUpdatesBtn');
+    if (btn) btn.disabled = true;
+    try {
+      setMessage('正在检查追剧更新…');
+      const res = await app.post('/api/ui/following/check-updates', {});
+      await refresh();
+      if (res && res.updated > 0) {
+        setMessage('检查完成：发现 ' + res.updated + ' 部剧集有更新！');
+      } else {
+        setMessage('检查完成：追剧剧集均已是最新集数');
+      }
+    } catch (error) {
+      setMessage('检查更新失败：' + error.message, true);
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
   function saveButton(id, title) {
     const saved = get(id)?.saved;
     const control = button('', () => toggleSaved(id), pending.has(id), 'secondary icon-button save-button');
@@ -211,9 +240,10 @@ export function createFollowing(app) {
     document.querySelectorAll('[data-follow-tab]').forEach(control => control.addEventListener('click', () => showTab(control.dataset.followTab)));
     $('followingSearch').addEventListener('input', () => {visibleLimit = 100; render();});
     $('retryFollowingBtn').addEventListener('click', refresh);
+    $('checkFollowingUpdatesBtn')?.addEventListener('click', checkUpdates);
     document.addEventListener('visibilitychange', () => {if (!document.hidden && Date.now() - lastRefresh > 30000) refresh();});
     return refresh();
   }
 
-  return {init, render, refresh, refreshCover, retryCovers: () => $('followingList').querySelectorAll('.following-cover').forEach(poster => poster.retryCover?.()), get, toggleSaved, setCompleted, saveButton, showTab, busy: id => pending.has(id), acknowledge: id => {if (get(id)?.newEpisodes) change(id, {acknowledge: true});}};
+  return {init, render, refresh, refreshCover, retryCovers: () => $('followingList').querySelectorAll('.following-cover').forEach(poster => poster.retryCover?.()), get, toggleSaved, setCompleted, setAutoDownload, checkUpdates, saveButton, showTab, busy: id => pending.has(id), acknowledge: id => {if (get(id)?.newEpisodes) change(id, {acknowledge: true});}};
 }

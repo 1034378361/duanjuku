@@ -140,10 +140,15 @@ func (a *UIApp) refreshDramaMetadata(ctx context.Context, drama Drama) (dramaRef
 			}
 			updated := mergeRefreshedDrama(patch, current, drama)
 			if !reflect.DeepEqual(updated, current) {
+				oldEp := followingEpisodeCount(current)
+				newEp := followingEpisodeCount(updated)
 				a.dramas[index] = updated
 				a.libraryDirty = true
 				a.libraryRevision++
 				changed = true
+				if newEp > oldEp {
+					go a.checkDramaUpdateFollowings(updated, oldEp, newEp)
+				}
 			}
 			break
 		}

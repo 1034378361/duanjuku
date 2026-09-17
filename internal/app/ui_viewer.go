@@ -216,7 +216,7 @@ func writeViewerError(writer http.ResponseWriter, status int, code, message stri
 func (app *UIApp) withBrowserViewer(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		path := request.URL.Path
-		if path != "/api/ui/following" && !strings.HasPrefix(path, "/api/ui/playback/") && !strings.HasPrefix(path, "/api/ui/account/") && path != "/api/ui/viewer/legacy" && !accountAdminPath(path) {
+		if !strings.HasPrefix(path, "/api/ui/following") && !strings.HasPrefix(path, "/api/ui/playback/") && !strings.HasPrefix(path, "/api/ui/account/") && path != "/api/ui/viewer/legacy" && !accountAdminPath(path) {
 			next.ServeHTTP(writer, request)
 			return
 		}

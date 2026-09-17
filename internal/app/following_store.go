@@ -23,6 +23,7 @@ type followingEntry struct {
 	Category      string    `json:"category,omitempty"`
 	Saved         bool      `json:"saved"`
 	Completed     bool      `json:"completed"`
+	AutoDownload  bool      `json:"autoDownload,omitempty"`
 	KnownEpisodes int       `json:"knownEpisodes"`
 	AddedAt       time.Time `json:"addedAt"`
 	UpdatedAt     time.Time `json:"updatedAt"`
@@ -106,14 +107,14 @@ func (store *followingStore) update(id string, change func(followingEntry, bool)
 	if err != nil {
 		return followingEntry{}, err
 	}
-	if !exists && (entry.Saved || entry.Completed) && len(store.entries) >= followingLimit {
+	if !exists && (entry.Saved || entry.Completed || entry.AutoDownload) && len(store.entries) >= followingLimit {
 		return followingEntry{}, errFollowingLimit
 	}
 	next := make(map[string]followingEntry, len(store.entries)+1)
 	for key, value := range store.entries {
 		next[key] = value
 	}
-	if entry.Saved || entry.Completed {
+	if entry.Saved || entry.Completed || entry.AutoDownload {
 		next[id] = entry
 	} else {
 		delete(next, id)
