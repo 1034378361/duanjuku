@@ -7,7 +7,7 @@ services:
     container_name: duanjuku
     restart: unless-stopped
     ports:
-      - "8999:8999"
+      - "8998:8998"
     volumes:
       - ./data:/data
       - ./downloads:/downloads
@@ -15,7 +15,7 @@ services:
       - TZ=Asia/Shanghai
     command:
       - "-open=false"
-      - "-listen=0.0.0.0:8999"
+      - "-listen=0.0.0.0:8998"
       - "-data-dir=/data"
       - "-out=/downloads"
       - "-ffmpeg=/usr/bin/ffmpeg"
