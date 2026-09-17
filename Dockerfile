@@ -1,7 +1,6 @@
-FROM golang:1.26-bookworm AS build
+FROM golang:1.24-bookworm AS build
 WORKDIR /src
-COPY go.mod go.sum ./
-RUN go mod download
+COPY go.mod ./
 COPY main.go ./
 COPY internal ./internal
 RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/juku .
@@ -13,7 +12,7 @@ COPY --from=build /out/juku /usr/local/bin/juku
 USER 1000:1000
 WORKDIR /data
 VOLUME ["/data", "/downloads"]
-EXPOSE 8998
-HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 CMD curl --noproxy '*' --fail --silent --output /dev/null http://127.0.0.1:8998/healthz || exit 1
+EXPOSE 8999
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 CMD curl --noproxy '*' --fail --silent --output /dev/null http://127.0.0.1:8999/ || exit 1
 ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/juku"]
-CMD ["-open=false", "-listen", "0.0.0.0:8998", "-data-dir", "/data", "-out", "/downloads", "-ffmpeg", "/usr/bin/ffmpeg"]
+CMD ["-open=false", "-listen", "0.0.0.0:8999", "-data-dir", "/data", "-out", "/downloads", "-ffmpeg", "/usr/bin/ffmpeg"]

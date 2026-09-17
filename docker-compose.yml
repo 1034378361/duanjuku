@@ -1,0 +1,23 @@
+services:
+  duanjuku:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: duanjuku:latest
+    container_name: duanjuku
+    restart: unless-stopped
+    ports:
+      - "8999:8999"
+    volumes:
+      - ./data:/data
+      - ./downloads:/downloads
+    environment:
+      - TZ=Asia/Shanghai
+    command:
+      - "-open=false"
+      - "-listen=0.0.0.0:8999"
+      - "-data-dir=/data"
+      - "-out=/downloads"
+      - "-ffmpeg=/usr/bin/ffmpeg"
+      - "-admin-user=admin"
+      - "-admin-password=admin123456"
